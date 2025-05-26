@@ -1,23 +1,18 @@
-from game.campo_minado import CampoMinado
+from ai.trainer import CampoMinadoTrainer
 
 if __name__ == "__main__":
-    try:
-        linhas = int(input("Digite o número de linhas do campo: "))
-        colunas = int(input("Digite o número de colunas do campo: "))
-        num_bombas = int(input("Digite o número de bombas: "))
-
-        if num_bombas >= linhas * colunas:
-            print("Número de bombas inválido! Deve ser menor que o total de células.")
-        else:
-            jogo = CampoMinado(linhas, colunas, num_bombas)
-
-            while jogo.jogo_ativo:
-                jogo.mostrar_campo()
-                try:
-                    l = int(input("Linha: "))
-                    c = int(input("Coluna: "))
-                    jogo.revelar(l, c)
-                except ValueError:
-                    print("Digite um número válido!")
-    except ValueError:
-        print("Por favor, insira apenas números inteiros!")
+    # Configurações do jogo
+    LINHAS = 8
+    COLUNAS = 8
+    NUM_BOMBAS = 10
+    
+    # Criar e treinar o agente
+    trainer = CampoMinadoTrainer(LINHAS, COLUNAS, NUM_BOMBAS)
+    
+    # Modo de treinamento
+    print("Iniciando treinamento...")
+    trainer.train(1000)  # Treina por 1000 episódios
+    
+    # Modo de execução
+    print("\nJogando uma partida com o agente treinado...")
+    trainer.play_game(show_steps=True)
