@@ -35,10 +35,19 @@ class CampoMinadoTrainer:
         self.save_agent()
 
     def save_agent(self):
-        # Convertendo defaultdict para dict regular
-        q_table = {str(state): dict(actions) for state, actions in self.agent.q_table.items()}
+        # Convertendo defaultdict para dict regular com chaves e valores serializáveis
+        q_table_serializable = {}
+        for state, actions in self.agent.q_table.items():
+            # Converte o estado (tupla) para string
+            state_str = json.dumps(list(state))
+            q_table_serializable[state_str] = {}
+            for action, value in actions.items():
+                # Converte a ação (tupla) para string
+                action_str = json.dumps(list(action))
+                q_table_serializable[state_str][action_str] = value
+
         with open('q_table.json', 'w') as f:
-            json.dump(q_table, f)
+            json.dump(q_table_serializable, f)
         print("Q-table salva em 'q_table.json'")
 
     def update_plot(self):
@@ -72,6 +81,7 @@ class CampoMinadoTrainer:
             if self.episode_count % 10 == 0:
                 print(f"Episódio {self.episode_count}, Pontuação Média: {avg_score:.2f}")
                 self.update_plot()
+                self.save_agent()  # Salva periodicamente durante o treinamento
 
     def _play_episode(self):
         """Joga um episódio completo e retorna a pontuação."""

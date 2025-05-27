@@ -10,9 +10,9 @@ def load_agent():
             q_table_dict = json.load(f)
             # Convertendo as strings de volta para tuplas
             for state_str, actions in q_table_dict.items():
-                state = eval(state_str)  # Converte string de volta para tupla
+                state = tuple(json.loads(state_str))  # Converte string JSON para tupla
                 for action_str, value in actions.items():
-                    action = eval(action_str)  # Converte string de volta para tupla
+                    action = tuple(json.loads(action_str))  # Converte string JSON para tupla
                     agent.q_table[state][action] = value
         print("Q-table carregada com sucesso!")
     except FileNotFoundError:
