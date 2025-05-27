@@ -17,6 +17,7 @@ class CampoMinadoTrainer:
         self.episodes = []
         self.episode_count = 0
         self.running = True
+        self.best_score = float('-inf')
         
         # Configuração do plot
         plt.ion()
@@ -38,11 +39,9 @@ class CampoMinadoTrainer:
         # Convertendo defaultdict para dict regular com chaves e valores serializáveis
         q_table_serializable = {}
         for state, actions in self.agent.q_table.items():
-            # Converte o estado (tupla) para string
             state_str = json.dumps(list(state))
             q_table_serializable[state_str] = {}
             for action, value in actions.items():
-                # Converte a ação (tupla) para string
                 action_str = json.dumps(list(action))
                 q_table_serializable[state_str][action_str] = value
 
@@ -78,15 +77,21 @@ class CampoMinadoTrainer:
             self.scores.append(avg_score)
             self.episodes.append(self.episode_count)
             
+            # Salva o melhor modelo
+            if avg_score > self.best_score:
+                self.best_score = avg_score
+                self.save_agent()
+            
             if self.episode_count % 10 == 0:
-                print(f"Episódio {self.episode_count}, Pontuação Média: {avg_score:.2f}")
+                print(f"Episódio {self.episode_count}, Pontuação Média: {avg_score:.2f}, Epsilon: {self.agent.epsilon:.3f}")
                 self.update_plot()
-                self.save_agent()  # Salva periodicamente durante o treinamento
 
     def _play_episode(self):
         """Joga um episódio completo e retorna a pontuação."""
         jogo = CampoMinado(self.linhas, self.colunas, self.num_bombas)
         score = 0
+        cells_revealed = 0
+        total_safe_cells = (self.linhas * self.colunas) - self.num_bombas
         
         while jogo.jogo_ativo:
             current_state = self.agent.get_state_representation(jogo.campo)
@@ -97,22 +102,37 @@ class CampoMinadoTrainer:
 
             linha, coluna = action
             celula_anterior = jogo.campo[linha][coluna].revelada
+            vizinhas_antes = self._contar_celulas_reveladas(jogo.campo)
             jogo.revelar(linha, coluna)
+            vizinhas_depois = self._contar_celulas_reveladas(jogo.campo)
             
+            # Sistema de recompensas melhorado
             if not jogo.jogo_ativo and jogo.campo[linha][coluna].tem_bomba:
-                reward = -100
-                score -= 100
-            elif not celula_anterior and jogo.campo[linha][coluna].revelada:
-                reward = 10
-                score += 10
+                reward = -200  # Penalidade maior por encontrar bomba
+                score -= 200
             else:
-                reward = -1
-                score -= 1
+                celulas_reveladas = vizinhas_depois - vizinhas_antes
+                if celulas_reveladas > 0:
+                    reward = 20 * celulas_reveladas  # Recompensa por revelar múltiplas células
+                    score += 20 * celulas_reveladas
+                    cells_revealed += celulas_reveladas
+                else:
+                    reward = -5  # Penalidade por não revelar nada novo
+                    score -= 5
+                
+                # Bônus por progresso
+                if cells_revealed == total_safe_cells:
+                    reward += 500  # Bônus grande por vencer
+                    score += 500
             
             next_state = self.agent.get_state_representation(jogo.campo)
             self.agent.learn(current_state, action, reward, next_state)
         
         return score
+
+    def _contar_celulas_reveladas(self, campo):
+        """Conta o número total de células reveladas."""
+        return sum(1 for linha in campo for celula in linha if celula.revelada)
 
 if __name__ == "__main__":
     trainer = CampoMinadoTrainer(8, 8, 10)
