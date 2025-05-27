@@ -1,38 +1,28 @@
-from game.campo_minado import CampoMinado
-from ai.q_learning_agent import QLearningAgent
-import json
 import time
-
-def load_agent():
-    agent = QLearningAgent()
-    try:
-        with open('q_table.json', 'r') as f:
-            q_table_dict = json.load(f)
-            # Convertendo as strings de volta para tuplas
-            for state_str, actions in q_table_dict.items():
-                state = tuple(json.loads(state_str))  # Converte string JSON para tupla
-                for action_str, value in actions.items():
-                    action = tuple(json.loads(action_str))  # Converte string JSON para tupla
-                    agent.q_table[state][action] = value
-        print("Q-table carregada com sucesso!")
-    except FileNotFoundError:
-        print("Arquivo q_table.json não encontrado. O agente começará sem treinamento.")
-    return agent
+import torch
+from game.campo_minado import CampoMinado
+from agent import MinesweeperAgent
 
 def play_game(agent, delay=1.0):
     """Joga uma partida usando o agente treinado."""
-    jogo = CampoMinado(8, 8, 10)
+    BOARD_SIZE = 8
+    NUM_BOMBS = 10
+    
+    jogo = CampoMinado(BOARD_SIZE, BOARD_SIZE, NUM_BOMBS)
     moves = 0
     
     while jogo.jogo_ativo:
         print(f"\nMovimento {moves + 1}")
         jogo.mostrar_campo()
         
-        action = agent.choose_action(jogo.campo)
-        if action is None:
-            break
-            
-        linha, coluna = action
+        # Obtém o estado e a ação do agente
+        state = agent.get_state(jogo)
+        action = agent.get_action(state)
+        move = torch.argmax(torch.tensor(action)).item()
+        
+        # Converte o índice em coordenadas
+        linha, coluna = move // BOARD_SIZE, move % BOARD_SIZE
+        
         print(f"Agente escolheu: linha {linha}, coluna {coluna}")
         jogo.revelar(linha, coluna)
         moves += 1
@@ -45,7 +35,17 @@ def play_game(agent, delay=1.0):
 
 if __name__ == "__main__":
     print("Carregando agente treinado...")
-    agent = load_agent()
+    
+    # Inicializa o agente com as mesmas dimensões usadas no treinamento
+    BOARD_SIZE = 8
+    state_size = BOARD_SIZE * BOARD_SIZE
+    action_size = state_size
+    
+    agent = MinesweeperAgent(state_size, action_size)
+    agent.load_model()  # Carrega o modelo treinado
+    
+    # Define epsilon para 0 durante o jogo (sem exploração)
+    agent.epsilon = 0
     
     while True:
         input("\nPressione Enter para jogar uma nova partida (ou CTRL+C para sair)...")
