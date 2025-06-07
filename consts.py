@@ -1,0 +1,4 @@
+# Funções auxiliares
+PATCH_SIZE = 5
+CONTEXT = PATCH_SIZE // 2
+TRAINING_NUMBER = 100
