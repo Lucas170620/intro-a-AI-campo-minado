@@ -18,7 +18,7 @@ pip install torch numpy matplotlib tqdm
 
 ## Training and Running
 
-Execute `main.py` to train the network and automatically evaluate it over several game rounds:
+Execute `main.py` to train the network and automatically play a round of Minesweeper after each training cycle:
 
 ```bash
 python main.py
@@ -29,6 +29,8 @@ Each training cycle stores the weights and plots in the `models/` directory, e.g
 - `models/ssl_net_cycle1.pth`
 - `models/loss_cycle1.png`
 - `models/prediction_cycle1.png`
+
+During play, the board state is printed so you can observe how the AI performs.
 
 ## Further Ideas
 

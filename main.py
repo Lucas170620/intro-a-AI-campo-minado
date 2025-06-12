@@ -35,6 +35,17 @@ def board_from_game(game: CampoMinado) -> np.ndarray:
     return board
 
 
+def board_from_view(game: CampoMinado) -> np.ndarray:
+    """Return the current visible state of the game board."""
+    board = np.full((game.linhas, game.colunas), -1, dtype=int)
+    for i in range(game.linhas):
+        for j in range(game.colunas):
+            cell = game.campo[i][j]
+            if cell.revelada:
+                board[i, j] = 9 if cell.tem_bomba else cell.bombas_vizinhas
+    return board
+
+
 def extract_patch(board: np.ndarray, x: int, y: int, patch_size: int = 5) -> np.ndarray:
     context = patch_size // 2
     return board[x - context:x + context + 1, y - context:y + context + 1]
@@ -139,7 +150,7 @@ def plot_boards(original: np.ndarray, predicted: np.ndarray, path: str):
 
 def progressive_reveal(board: np.ndarray, model: nn.Module, device: torch.device, threshold: float = 0.9):
     context = 2
-    revealed = np.full_like(board, -1)
+    revealed = board.copy()
     confidence = np.zeros_like(board, dtype=float)
     model.eval()
 
@@ -169,6 +180,41 @@ def evaluate(model: nn.Module, device: torch.device, board: np.ndarray) -> tuple
     return accuracy, predicted
 
 
+def play_game(model: nn.Module, device: torch.device, size: int = 10, mines: int = 10) -> bool:
+    """Play a single game using the model's predictions."""
+    game = CampoMinado(size, size, mines)
+    step = 0
+    while game.jogo_ativo:
+        step += 1
+        view = board_from_view(game)
+        predicted, conf = progressive_reveal(view, model, device, threshold=0.8)
+
+        best = None
+        best_conf = -1.0
+        for i in range(size):
+            for j in range(size):
+                if not game.campo[i][j].revelada and predicted[i, j] != 9:
+                    if conf[i, j] > best_conf:
+                        best = (i, j)
+                        best_conf = conf[i, j]
+
+        if best is None:
+            import random
+            options = [
+                (i, j)
+                for i in range(size)
+                for j in range(size)
+                if not game.campo[i][j].revelada
+            ]
+            best = random.choice(options)
+
+        print(f"Jogada {step}: revelando {best}")
+        game.revelar(*best)
+        game.mostrar_campo()
+
+    return game._verificar_vitoria()
+
+
 def train_and_play(cycles: int = 3, epochs_per_cycle: int = 5) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = SSLNet().to(device)
@@ -186,6 +232,9 @@ def train_and_play(cycles: int = 3, epochs_per_cycle: int = 5) -> None:
         accuracy, predicted = evaluate(model, device, board)
         plot_boards(board, predicted, f"models/prediction_cycle{cycle}.png")
         print(f"Accuracy after cycle {cycle}: {accuracy * 100:.2f}%")
+
+        win = play_game(model, device)
+        print("Resultado da partida:", "Vitoria" if win else "Derrota")
 
 
 
