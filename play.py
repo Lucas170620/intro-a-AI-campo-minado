@@ -76,8 +76,8 @@ else:
     model_full = None
 
 # ---- Jogo ----
-tam = 10
-bombas = 10
+tam = 4
+bombas = 2
 jogo = CampoMinado(tam, tam, bombas)
 
 max_moves = tam * tam  # só para evitar loop infinito

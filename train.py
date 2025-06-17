@@ -11,7 +11,7 @@ from tqdm import tqdm
 from consts import TRAINING_NUMBER
 
 # ----- 1. Geração do Board Real -----
-def generate_board(size=10, num_mines=10):
+def generate_board(size=4, num_mines=2):
     board = np.zeros((size, size), dtype=int)
     # Coloca minas
     mines = np.random.choice(size * size, num_mines, replace=False)
