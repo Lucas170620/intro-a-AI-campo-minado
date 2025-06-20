@@ -4,7 +4,7 @@ from reinforcement_learning.helper import plot
 import numpy as np
 
 def train():
-    linhas, colunas, n_bombas = 10 , 10, 10
+    linhas, colunas, n_bombas = 4 , 4, 2
     scores = []
     mean_scores = []
     victories = []
@@ -13,7 +13,7 @@ def train():
     total_victory = 0
     record = 0
     agent = MinesweeperAgent(linhas, colunas, n_bombas)
-    N_EPISODES = 30000
+    N_EPISODES = 1000
 
     for game in range(N_EPISODES):
         campo = CampoMinado(linhas, colunas, n_bombas)
@@ -34,19 +34,29 @@ def train():
             state_new = agent.get_state(campo)
 
             if prev_revelada:
-                reward = -2
+                reward = -1  # penalidade leve, pode ocorrer por erro de clique ou revelação em cascata
                 done = False
             elif celula.tem_bomba:
-                reward = -10
+                reward = -10  # ainda penaliza muito
                 done = True
-            elif campo.jogo_ativo and not celula.tem_bomba:
-                reward = 2
+            elif campo._verificar_vitoria():
+                reward = +30  # recompensa pela vitória
+                score += 1
+                victory = 1
+                done = True
+            elif not celula.tem_bomba:
+                # célula segura aberta
+                if celula.bombas_vizinhas == 0:
+                    reward = +4  # abrir área segura continua valioso
+                elif celula.bombas_vizinhas == 1:
+                    reward = +2
+                else:
+                    reward = +1
                 score += 1
                 done = False
             else:
-                reward = +10
-                victory = 1
-                done = True
+                reward = 0
+                done = False
 
             agent.train_short_memory(state_old, action, reward, state_new, done)
             agent.remember(state_old, action, reward, state_new, done)
@@ -60,7 +70,7 @@ def train():
 
         if score > record:
             record = score
-            model_name = f"model_{N_EPISODES}_partidas_{linhas}_x_{colunas}_{n_bombas}M.pth"
+            model_name = f"model_{N_EPISODES}_partidas_{linhas}_x_{colunas}_{n_bombas}M_v7.pth"
             print(model_name)
             agent.model.save(file_name=model_name)
         scores.append(score)

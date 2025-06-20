@@ -3,7 +3,8 @@ from IPython import display
 
 plt.ion()
 
-def plot(scores, mean_scores, winrates=None, mov_avg_scores=None, mov_avg_winrates=None, save_final=False):
+def plot(scores, mean_scores, winrates=None, mov_avg_scores=None, mov_avg_winrates=None, save_final=False, plays=0,
+         tab_len=0, num_mines=0):
     display.clear_output(wait=True)
     display.display(plt.gcf())
     plt.clf()
@@ -33,4 +34,4 @@ def plot(scores, mean_scores, winrates=None, mov_avg_scores=None, mov_avg_winrat
     plt.pause(.1)
     # Salva a imagem se solicitado
     if save_final:
-        plt.savefig("campo_minado_rl_training.png")
+        plt.savefig(f"reinforcement_learning/results/campo_minado_rl_training_{plays}_partidas_{tab_len}_x_{tab_len}_{num_mines}M_V7.png")

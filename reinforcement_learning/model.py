@@ -16,11 +16,13 @@ class Linear_QNet(nn.Module):
         return x
 
     def save(self, file_name='model.pth'):
-        model_folder_path = './model'
+        model_folder_path = './reinforcement_learning/models/'
         if not os.path.exists(model_folder_path):
+            print("crate dir")
             os.makedirs(model_folder_path)
 
         file_name = os.path.join(model_folder_path, file_name)
+        print(file_name)
         torch.save(self.state_dict(), file_name)
 
 
