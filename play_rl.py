@@ -9,7 +9,7 @@ from game.campo_minado import CampoMinado
 LINHAS = 4
 COLUNAS = 4
 N_BOMBAS = 2
-MODEL_PATH = 'reinforcement_learning\models\model_1000_partidas_4_x_4_2M_V9.2.pth'
+MODEL_PATH = 'reinforcement_learning\models\model_30000_partidas_4_x_4_2M_final_version.pth'
 
 RESULTADOS_DIR = 'reinforcement_learning/resultados_finais'
 os.makedirs(RESULTADOS_DIR, exist_ok=True)
@@ -51,17 +51,14 @@ def main():
             state = agent.get_state(campo)
             passos += 1
 
-            if partida == 1:
-                log.append(f"Passo {passos}: Jogando em ({linha}, {coluna}) | Revelada antes? {prev_revelada} | Bomba? {celula.tem_bomba}")
-                print_campo(campo)
-                print('-'*35)
+            
+            log.append(f"Passo {passos}: Jogando em ({linha}, {coluna}) | Revelada antes? {prev_revelada} | Bomba? {celula.tem_bomba}")
+            
 
             if celula.tem_bomba:
                 resultado = "DERROTA"
                 derrotas += 1
-                if partida == 1:
-                    print("\n".join(log))
-                    print(f"Resultado da 1ª partida: {resultado}\n")
+                print("\n".join(log))
                 break
             elif campo._verificar_vitoria():
                 resultado = "VITÓRIA"

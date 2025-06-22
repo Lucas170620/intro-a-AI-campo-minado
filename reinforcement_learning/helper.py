@@ -34,4 +34,4 @@ def plot(scores, mean_scores, winrates=None, mov_avg_scores=None, mov_avg_winrat
     plt.pause(.1)
     # Salva a imagem se solicitado
     if save_final:
-        plt.savefig(f"reinforcement_learning/results/campo_minado_rl_training_{plays}_partidas_{tab_len}_x_{tab_len}_{num_mines}M_K3.png")
+        plt.savefig(f"reinforcement_learning/results/campo_minado_rl_training_{plays}_partidas_{tab_len}_x_{tab_len}_{num_mines}_final_version_2.png")

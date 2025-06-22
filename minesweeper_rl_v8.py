@@ -60,7 +60,7 @@ def train():
     total_victory = 0
     record = 0
     agent = MinesweeperAgent(linhas, colunas, n_bombas)
-    N_EPISODES = 1000
+    N_EPISODES = 30000
 
     for game in range(N_EPISODES):
         campo = CampoMinado(linhas, colunas, n_bombas)
@@ -101,7 +101,7 @@ def train():
 
         if score > record:
             record = score
-            model_name = f"model_{N_EPISODES}_partidas_{linhas}_x_{colunas}_{n_bombas}M_V9.2.pth"
+            model_name = f"model_{N_EPISODES}_partidas_{linhas}_x_{colunas}_{n_bombas}M_final_version.pth"
             print(model_name)
             agent.model.save(file_name=model_name)
         scores.append(score)
