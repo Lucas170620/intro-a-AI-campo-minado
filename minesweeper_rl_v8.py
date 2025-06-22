@@ -20,21 +20,33 @@ def avaliar_jogada(campo, linha, coluna, prev_revelada):
 
     return jogada_invalida, bomba, vitoria, fim_de_jogo
 
-def calcular_recompensa(celula, vitoria=False, derrota=False):
-    if celula.revelada:
-        reward = -5
+def calcular_recompensa(celula, vitoria=False, derrota=False, prev_revelada=False):
+    """
+    Sistema de recompensas:
+    1. Abertura de célula segura: +0.1
+    2. Abertura de célula com bomba: -1.0
+    3. Célula já revelada: -0.5
+    4. Vitória: +5.0
+    5. Penalização por arriscada: -0.1*n_bombas_vizinho
+    6. Bônus por célula com 0 bombas vizinhas: +0.2
+    """
+    reward = 0.0
+
+    if prev_revelada:
+        reward = -0.5
     elif celula.tem_bomba:
-        reward = -10
+        reward = -1.0
     else:
-        reward = 1
+        # Aberta célula segura
+        reward = 0.1
         reward -= 0.1 * celula.bombas_vizinhas
         if celula.bombas_vizinhas == 0:
-            reward += 1
+            reward += 0.2
 
     if vitoria:
-        reward += 50
+        reward += 5.0
     if derrota:
-        reward -= 50
+        reward -= 5.0  # Se preferir, pode aumentar para -10, etc.
 
     return reward
 
@@ -48,7 +60,7 @@ def train():
     total_victory = 0
     record = 0
     agent = MinesweeperAgent(linhas, colunas, n_bombas)
-    N_EPISODES = 1000
+    N_EPISODES = 30000
 
     for game in range(N_EPISODES):
         campo = CampoMinado(linhas, colunas, n_bombas)
@@ -71,7 +83,8 @@ def train():
             jogada_invalida, bomba, vitoria, fim_de_jogo = avaliar_jogada(campo, linha, coluna, prev_revelada)
             derrota = bomba and fim_de_jogo
 
-            reward = calcular_recompensa(celula, vitoria, derrota)
+            # Passando prev_revelada para checagem de penalidade correta
+            reward = calcular_recompensa(celula, vitoria, derrota, prev_revelada=prev_revelada)
 
             if not prev_revelada and not bomba:
                 score += 1
@@ -88,7 +101,7 @@ def train():
 
         if score > record:
             record = score
-            model_name = f"model_{N_EPISODES}_partidas_{linhas}_x_{colunas}_{n_bombas}M_V8.pth"
+            model_name = f"model_{N_EPISODES}_partidas_{linhas}_x_{colunas}_{n_bombas}M_V9.pth"
             print(model_name)
             agent.model.save(file_name=model_name)
         scores.append(score)
