@@ -9,7 +9,7 @@ from game.campo_minado import CampoMinado
 LINHAS = 4
 COLUNAS = 4
 N_BOMBAS = 2
-MODEL_PATH = 'reinforcement_learning/models/model_10000_partidas_4_x_4_2M.pth'
+MODEL_PATH = 'reinforcement_learning\models\model_1000_partidas_4_x_4_2M_V9.2.pth'
 
 RESULTADOS_DIR = 'reinforcement_learning/resultados_finais'
 os.makedirs(RESULTADOS_DIR, exist_ok=True)
@@ -41,7 +41,7 @@ def main():
         resultado = None  # 'VITÓRIA' ou 'DERROTA'
 
         while campo.jogo_ativo:
-            action = agent.get_action(state, campo)
+            action = agent.get_action(state, campo, epsilon=0)
             move = action.argmax()
             linha, coluna = move // COLUNAS, move % COLUNAS
             celula = campo.campo[linha][coluna]

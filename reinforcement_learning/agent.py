@@ -57,8 +57,11 @@ class MinesweeperAgent:
     def train_short_memory(self, state, action, reward, next_state, done):
         self.trainer.train_step(state, action, reward, next_state, done)
 
-    def get_action(self, state, campo):
-        self.epsilon = max(2, 40 - self.n_games // 10)
+    def get_action(self, state, campo, epsilon=None):
+        if epsilon is None:
+            self.epsilon = max(2, 40 - self.n_games // 10)
+        else:
+            self.epsilon = epsilon
         final_move = np.zeros(self.linhas * self.colunas)
         # Só pode clicar em células ocultas
         choices = [(i, j) for i in range(self.linhas) for j in range(self.colunas) if not campo.campo[i][j].revelada]
