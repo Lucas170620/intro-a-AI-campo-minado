@@ -51,7 +51,7 @@ def calcular_recompensa(celula, vitoria=False, derrota=False, prev_revelada=Fals
     return reward
 
 def train():
-    linhas, colunas, n_bombas = 4 , 4, 2
+    linhas, colunas, n_bombas = 10,10,10
     scores = []
     mean_scores = []
     victories = []
@@ -60,7 +60,8 @@ def train():
     total_victory = 0
     record = 0
     agent = MinesweeperAgent(linhas, colunas, n_bombas)
-    N_EPISODES = 30000
+    N_EPISODES = 100000
+
 
     for game in range(N_EPISODES):
         campo = CampoMinado(linhas, colunas, n_bombas)
@@ -125,7 +126,7 @@ def train():
             mov_avg_winrates = [100 * np.mean(victories[:i+1]) for i in range(len(victories))]
 
         # Plota normal durante o treino
-        plot(scores, mean_scores, winrates, mov_avg_scores, mov_avg_winrates, save_final=False)
+        # plot(scores, mean_scores, winrates, mov_avg_scores, mov_avg_winrates, save_final=False)
         print(f'Game {game+1} | Score: {score} | Record: {record} | Mean: {mean_scores[-1]:.2f} | MovingAvgWinrate(200): {mov_avg_winrates[-1]:.2f}% | WinRate: {winrate:.1f}%')
 
     # Ao final do treinamento, salva a imagem
